@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment and secrets
+.env
+*.local
+
+# Node / console
+node_modules/
+console/dist/
+console/.vite/
+*.log
+
+# Splunk runtime data and large artifacts
+splunk-data/
+*.tgz
+*.spl
+appinspect_report.*
+
+# Model weights and caches
+models/weights/
+.ollama/
+*.gguf
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Internal working docs (kept local, not part of the public repo)
+HANDOFF.md
+docs/SUBMISSION.md
+docs/DEMO_SCRIPT.md
+docs/FEEDBACK.md
+docs/SUBMISSION_CHECKLIST.md
+
+# Demo-production assets (local only)
+scripts/make_voiceover.py
+scripts/record_demo.py
+scripts/mux_demo.py
+scripts/_splunk_probe.py
+scripts/add_captions.py
+demo_voiceover/
+demo_video/
+
+# Submission package (local working copy)
+submission/

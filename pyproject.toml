@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "veritrace"
+version = "1.0.0"
+description = "Autonomous Tier-1 SOC analyst for Splunk that proves every step. Investigates over the Splunk MCP Server, reasons with the Foundation-Sec model, writes a verifiable reasoning ledger back into Splunk, and ships detection-as-code."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Tejas Mane" }]
+keywords = ["splunk", "soc", "security", "mcp", "agent", "ai", "detection-as-code", "foundation-sec"]
+
+dependencies = [
+    "splunk-sdk>=2.1.0",
+    "mcp>=1.2.0",
+    "httpx>=0.27.0",
+    "requests>=2.31.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "sse-starlette>=2.0.0",
+    "pydantic>=2.6.0",
+    "python-dotenv>=1.0.0",
+    "PyYAML>=6.0",
+    "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+local-model = ["openai>=1.30.0"]
+appinspect = ["splunk-appinspect>=3.0.0"]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0", "ruff>=0.4.0"]
+
+[project.scripts]
+veritrace = "veritrace.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["veritrace*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

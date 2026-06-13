@@ -1,0 +1,14 @@
+# Application-level permissions for the Veritrace app
+
+[]
+access = read : [ * ], write : [ admin, power, sc_admin ]
+export = system
+
+[views]
+export = system
+
+[savedsearches]
+export = system
+
+[alert_actions]
+export = system

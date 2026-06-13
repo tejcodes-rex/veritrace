@@ -1,0 +1,89 @@
+# Veritrace full stack. One command brings up Splunk, loads a realistic breach,
+# starts the MCP server and the agent backend, and serves the console.
+#
+#   docker compose up --build
+#
+# Then open http://localhost:8400 for the console and http://localhost:8000 for
+# Splunk (admin / Veritrace!2026). The default model provider is "replay", so
+# the stack runs with no GPU. Set VERITRACE_MODEL_PROVIDER=ollama in .env to use
+# the Foundation-Sec model running on the host.
+
+services:
+  splunk:
+    image: splunk/splunk:latest
+    container_name: veritrace-splunk
+    hostname: splunk
+    environment:
+      SPLUNK_GENERAL_TERMS: "--accept-sgt-current-at-splunk-com"
+      SPLUNK_START_ARGS: "--accept-license"
+      SPLUNK_PASSWORD: "${SPLUNK_PASSWORD:-Veritrace!2026}"
+      SPLUNK_HEC_TOKEN: "${SPLUNK_HEC_TOKEN:-00000000-feed-feed-feed-000000000000}"
+    ports:
+      - "8000:8000"   # Splunk Web
+      - "8088:8088"   # HTTP Event Collector
+      - "8089:8089"   # management / REST
+    volumes:
+      - splunk-var:/opt/splunk/var
+      - splunk-etc:/opt/splunk/etc
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsk -u admin:$SPLUNK_PASSWORD https://localhost:8089/services/server/info || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+
+  init:
+    build: .
+    container_name: veritrace-init
+    depends_on:
+      splunk:
+        condition: service_healthy
+    environment:
+      SPLUNK_HOST: splunk
+      SPLUNK_PASSWORD: "${SPLUNK_PASSWORD:-Veritrace!2026}"
+      SPLUNK_HEC_TOKEN: "${SPLUNK_HEC_TOKEN:-00000000-feed-feed-feed-000000000000}"
+    command: ["veritrace", "init", "--days", "14"]
+    restart: "no"
+
+  mcp:
+    build: .
+    container_name: veritrace-mcp
+    depends_on:
+      splunk:
+        condition: service_healthy
+    environment:
+      SPLUNK_HOST: splunk
+      SPLUNK_PASSWORD: "${SPLUNK_PASSWORD:-Veritrace!2026}"
+      VERITRACE_MCP_HOST: "0.0.0.0"
+      VERITRACE_MCP_PORT: "8052"
+    command: ["veritrace", "mcp-server"]
+    ports:
+      - "8052:8052"
+
+  api:
+    build: .
+    container_name: veritrace-api
+    depends_on:
+      splunk:
+        condition: service_healthy
+      mcp:
+        condition: service_started
+    environment:
+      SPLUNK_HOST: splunk
+      SPLUNK_PASSWORD: "${SPLUNK_PASSWORD:-Veritrace!2026}"
+      SPLUNK_HEC_TOKEN: "${SPLUNK_HEC_TOKEN:-00000000-feed-feed-feed-000000000000}"
+      MCP_URL: "http://mcp:8052/sse"
+      VERITRACE_MODEL_PROVIDER: "${VERITRACE_MODEL_PROVIDER:-replay}"
+      VERITRACE_GUIDED_PIVOTS: "${VERITRACE_GUIDED_PIVOTS:-false}"
+      OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-http://host.docker.internal:11434}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-hf.co/mradermacher/Foundation-Sec-8B-Instruct-GGUF:Q4_K_M}"
+      VERITRACE_API_HOST: "0.0.0.0"
+      VERITRACE_API_PORT: "8400"
+    ports:
+      - "8400:8400"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  splunk-var:
+  splunk-etc:

@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #090c11;
+  --color-ink-2: #0d121b;
+  --color-panel: #111824;
+  --color-panel-2: #0f151f;
+  --color-line: #1b2433;
+  --color-line-2: #28344a;
+  --color-fog: #7e889c;
+  --color-mist: #b9c4d6;
+  --color-bright: #eaf1fb;
+  --color-signal: #34e3c4;
+  --color-signal-deep: #0f7d6e;
+  --color-amber: #f3b15c;
+  --color-danger: #ff5d6b;
+  --color-danger-deep: #6e1d27;
+  --color-violet: #8f86f7;
+
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --font-serif: "IBM Plex Serif", ui-serif, Georgia, serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-ink);
+  color: var(--color-mist);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* layered atmosphere: blueprint grid + radial vignette */
+  background-image:
+    radial-gradient(120% 90% at 78% -10%, rgba(52, 227, 196, 0.06), transparent 55%),
+    radial-gradient(120% 90% at 8% 110%, rgba(143, 134, 247, 0.05), transparent 55%),
+    linear-gradient(to right, rgba(40, 52, 74, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(40, 52, 74, 0.18) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 46px 46px, 46px 46px;
+  background-attachment: fixed;
+}
+
+/* fine grain overlay for texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: rgba(52, 227, 196, 0.28);
+  color: var(--color-bright);
+}
+
+/* ---- reusable surface treatments ---- */
+.glass {
+  background: linear-gradient(180deg, rgba(17, 24, 36, 0.92), rgba(13, 18, 27, 0.92));
+  border: 1px solid var(--color-line);
+  backdrop-filter: blur(8px);
+}
+.hairline {
+  border: 1px solid var(--color-line);
+}
+.spine {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-line-2) 8%,
+    var(--color-line-2) 92%,
+    transparent
+  );
+}
+.glow-signal {
+  box-shadow: 0 0 0 1px rgba(52, 227, 196, 0.35), 0 0 28px -8px rgba(52, 227, 196, 0.5);
+}
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ---- scrollbars ---- */
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 9px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #364561;
+}
+
+/* ---- animations ---- */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.reveal {
+  animation: reveal-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 227, 196, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(52, 227, 196, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 227, 196, 0);
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 1.8s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.blink {
+  animation: blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes meter-fill {
+  from { width: 0; }
+}
+.meter-fill {
+  animation: meter-fill 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+.sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(52, 227, 196, 0.14), transparent);
+  animation: sweep 2.2s linear infinite;
+}
+
+/* ---- attack map: edges draw in, nodes ignite ---- */
+@keyframes edge-draw {
+  from { stroke-dashoffset: var(--len, 400); }
+  to { stroke-dashoffset: 0; }
+}
+.edge-draw {
+  stroke-dasharray: var(--len, 400);
+  animation: edge-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes node-ignite {
+  0% { r: 0; opacity: 0.9; }
+  100% { r: 26; opacity: 0; }
+}
+.node-ignite {
+  animation: node-ignite 1.6s ease-out infinite;
+  transform-box: fill-box;
+}
+@keyframes flow-dash {
+  to { stroke-dashoffset: -24; }
+}
+.flow-dash {
+  stroke-dasharray: 2 6;
+  animation: flow-dash 0.6s linear infinite;
+}
+
+/* ---- ledger seal: a step is committed to Splunk ---- */
+@keyframes seal-in {
+  0% { opacity: 0; transform: translateX(-4px); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.seal-in {
+  animation: seal-in 0.5s ease-out both;
+}
+
+/* ---- verdict hero impact ---- */
+@keyframes verdict-impact {
+  0% { opacity: 0; transform: scale(0.96); }
+  55% { opacity: 1; transform: scale(1.012); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.verdict-impact {
+  animation: verdict-impact 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+.scanline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(255, 93, 107, 0.06), transparent);
+  animation: scanline 3.2s linear infinite;
+}
+
+/* ---- count-up tabular figures ---- */
+.tnum { font-variant-numeric: tabular-nums; }

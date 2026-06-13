@@ -1,0 +1,110 @@
+<dashboard version="1.1" theme="dark">
+  <label>Veritrace Reasoning Ledger</label>
+  <description>Every investigation Veritrace runs is written back into Splunk. This is the glass box: search, audit and replay the agent's evidence, reasoning and actions.</description>
+
+  <row>
+    <panel>
+      <title>Confirmed breaches (true positives)</title>
+      <single>
+        <search>
+          <query>index=veritrace_ledger sourcetype=veritrace:investigation verdict=true_positive | stats dc(investigation_id)</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[0]</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Average confidence</title>
+      <single>
+        <search>
+          <query>index=veritrace_ledger sourcetype=veritrace:investigation | stats avg(confidence) as c | eval c=round(c*100,0)</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="unit">%</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Average time to verdict</title>
+      <single>
+        <search>
+          <query>index=veritrace_ledger sourcetype=veritrace:investigation | stats avg(mttr_seconds) as m | eval m=round(m,1)</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="unit">s</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Reasoning tokens used</title>
+      <single>
+        <search>
+          <query>index=veritrace_ledger sourcetype=veritrace:investigation | stats sum(total_tokens) as t</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+      </single>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Investigations</title>
+      <table>
+        <search>
+          <query>index=veritrace_ledger sourcetype=veritrace:investigation | table _time investigation_id alert_name verdict severity confidence mttr_seconds step_count | sort - _time</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Reasoning trace (glass box, each step sealed)</title>
+      <table>
+        <search>
+          <query>index=veritrace_ledger sourcetype=veritrace:reasoning | eval seal=substr(entry_hash,1,12) | table _time investigation_id seq kind title technique_id confidence spl result_count seal | sort investigation_id seq</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="count">20</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Chain of custody (each investigation sealed with a ledger root)</title>
+      <table>
+        <search>
+          <query>index=veritrace_ledger sourcetype=veritrace:investigation | eval ledger_root=substr(ledger_root,1,24) | table _time investigation_id verdict step_count ledger_root | sort - _time</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Detection-as-code proposed by Veritrace</title>
+      <table>
+        <search>
+          <query>index=veritrace_detections sourcetype=veritrace:detection | table _time name severity backtest_hits_incident backtest_false_positives mitre_techniques schedule_cron | sort - _time</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

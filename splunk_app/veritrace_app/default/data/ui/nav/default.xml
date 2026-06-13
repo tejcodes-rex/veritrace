@@ -1,0 +1,10 @@
+<nav search_view="search" color="#34e3c4">
+  <view name="veritrace_ledger" default="true" />
+  <view name="search" />
+  <collection label="Detections">
+    <saved>
+      <member name="Veritrace - Brute force authentication success" />
+      <member name="Veritrace - Account takeover with lateral movement and exfiltration" />
+    </saved>
+  </collection>
+</nav>

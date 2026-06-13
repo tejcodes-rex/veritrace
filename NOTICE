@@ -1,0 +1,10 @@
+Veritrace
+Copyright 2026 Tejas Mane
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It integrates with Splunk and the Splunk MCP Server, and can use the
+Foundation-Sec security model (Cisco Foundation AI), served locally or hosted by
+Splunk. Those components are the property of their respective owners and are
+used under their own licenses. This project does not redistribute their weights
+or source.
